@@ -337,6 +337,52 @@ const getNotesByStatus = async (req, res) => {
   }
 };
 
+const getNoteSummaryById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid note ID format",
+        data: null,
+      });
+    }
+
+    const note = await Note.findById(id);
+
+    if (!note) {
+      return res.status(404).json({
+        success: false,
+        message: "Note not found",
+        data: null,
+      });
+    }
+
+    const summaryLength = 50;
+    const summaryText = note.content.length > summaryLength 
+      ? note.content.substring(0, summaryLength) + "..." 
+      : note.content;
+
+    const summaryData = {
+      title: note.title,
+      summary: summaryText
+    };
+
+    res.status(200).json({
+      success: true,
+      message: "Note summary retrieved successfully",
+      data: summaryData,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
 module.exports = { 
   createNote, 
   createBulkNotes, 
@@ -347,5 +393,6 @@ module.exports = {
   deleteNote, 
   deleteBulkNotes,
   getNotesByCategory,
-  getNotesByStatus
+  getNotesByStatus,
+  getNoteSummaryById
 };

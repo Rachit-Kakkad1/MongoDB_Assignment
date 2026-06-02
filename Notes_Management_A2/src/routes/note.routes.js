@@ -10,7 +10,8 @@ const {
   deleteNote, 
   deleteBulkNotes,
   getNotesByCategory,
-  getNotesByStatus
+  getNotesByStatus,
+  getNoteSummaryById
 } = require("../controllers/note.controller");
 
 router.post("/", createNote);
@@ -19,6 +20,7 @@ router.get("/", getAllNotes);
 router.delete("/bulk", deleteBulkNotes);
 router.get("/category/:category", getNotesByCategory);
 router.get("/status/:isPinned", getNotesByStatus);
+router.get("/:id/summary", getNoteSummaryById);
 router.get("/:id", getNoteById);
 router.put("/:id", updateNote);
 router.patch("/:id", patchNote);
