@@ -44,4 +44,53 @@ const createNote = async (req, res) => {
   }
 };
 
-module.exports = {createNote};
+const createBulkNotes = async (req, res) => {
+  try {
+    // 1. Extract the array of notes from the request body
+    // We expect req.body to be an array of objects
+    const notesArray = req.body;
+
+    // 2. Validate that the input is actually an array and is not empty
+    if (!Array.isArray(notesArray) || notesArray.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide an array of notes",
+        data: null,
+      });
+    }
+
+    // 3. Validate each note in the array
+    // Every note must have a title and content. We loop through to check.
+    for (let i = 0; i < notesArray.length; i++) {
+      const note = notesArray[i];
+      if (!note.title || !note.content) {
+        return res.status(400).json({
+          success: false,
+          message: `Note at index ${i} is missing title or content`,
+          data: null,
+        });
+      }
+    }
+
+    // 4. Insert all notes into the database at once
+    // insertMany is a powerful Mongoose method that saves an array of documents
+    // efficiently in a single operation.
+    const createdNotes = await Note.insertMany(notesArray);
+
+    // 5. Send a success response
+    res.status(201).json({
+      success: true,
+      message: "Notes created successfully in bulk",
+      data: createdNotes,
+    });
+  } catch (error) {
+    // 6. Handle any unexpected errors
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
+module.exports = { createNote, createBulkNotes };
