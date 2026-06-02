@@ -482,6 +482,50 @@ const filterNotesByCategory = async (req, res) => {
   }
 };
 
+const filterNotesByDateRange = async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query;
+
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Both startDate and endDate query parameters are required",
+        data: null,
+      });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date format provided",
+        data: null,
+      });
+    }
+
+    const notes = await Note.find({
+      createdAt: {
+        $gte: start,
+        $lte: end
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Notes filtered by date range successfully",
+      data: notes,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
 module.exports = { 
   createNote, 
   createBulkNotes, 
@@ -496,5 +540,6 @@ module.exports = {
   getNoteSummaryById,
   filterNotes,
   getPinnedNotes,
-  filterNotesByCategory
+  filterNotesByCategory,
+  filterNotesByDateRange
 };
