@@ -260,4 +260,45 @@ const patchNote = async (req, res) => {
   }
 };
 
-module.exports = { createNote, createBulkNotes, getAllNotes, getNoteById, updateNote, patchNote };
+const deleteNote = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Validate the ID format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid note ID format",
+        data: null,
+      });
+    }
+
+    // 2. Delete the note from the database
+    // findByIdAndDelete locates the document and removes it in one step
+    const deletedNote = await Note.findByIdAndDelete(id);
+
+    // 3. Check if the note actually existed before deleting
+    if (!deletedNote) {
+      return res.status(404).json({
+        success: false,
+        message: "Note not found",
+        data: null,
+      });
+    }
+
+    // 4. Send success response
+    res.status(200).json({
+      success: true,
+      message: "Note deleted successfully",
+      data: deletedNote,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
+module.exports = { createNote, createBulkNotes, getAllNotes, getNoteById, updateNote, patchNote, deleteNote };
