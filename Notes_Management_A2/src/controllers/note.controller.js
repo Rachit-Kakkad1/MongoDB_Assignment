@@ -308,6 +308,35 @@ const getNotesByCategory = async (req, res) => {
   }
 };
 
+const getNotesByStatus = async (req, res) => {
+  try {
+    const { isPinned } = req.params;
+
+    if (isPinned !== "true" && isPinned !== "false") {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status. Must be 'true' or 'false'",
+        data: null,
+      });
+    }
+
+    const pinnedStatus = isPinned === "true";
+    const notes = await Note.find({ isPinned: pinnedStatus });
+
+    res.status(200).json({
+      success: true,
+      message: `Notes with isPinned='${pinnedStatus}' retrieved successfully`,
+      data: notes,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
 module.exports = { 
   createNote, 
   createBulkNotes, 
@@ -317,5 +346,6 @@ module.exports = {
   patchNote, 
   deleteNote, 
   deleteBulkNotes,
-  getNotesByCategory
+  getNotesByCategory,
+  getNotesByStatus
 };
