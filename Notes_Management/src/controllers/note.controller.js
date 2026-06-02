@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Note = require("../models/note.model");
 
 const createNote = async (req, res) => {
@@ -117,4 +118,44 @@ const getAllNotes = async (req, res) => {
   }
 };
 
-module.exports = { createNote, createBulkNotes, getAllNotes };
+const getNoteById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Validate if the provided ID is a valid MongoDB ObjectId format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid note ID format",
+        data: null,
+      });
+    }
+
+    // 2. Fetch the specific note by its ID
+    const note = await Note.findById(id);
+
+    // 3. Check if the note exists in the database
+    if (!note) {
+      return res.status(404).json({
+        success: false,
+        message: "Note not found",
+        data: null,
+      });
+    }
+
+    // 4. Send success response
+    res.status(200).json({
+      success: true,
+      message: "Note retrieved successfully",
+      data: note,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
+module.exports = { createNote, createBulkNotes, getAllNotes, getNoteById };
