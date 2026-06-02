@@ -13,7 +13,8 @@ const {
   getNotesByStatus,
   getNoteSummaryById,
   filterNotes,
-  getPinnedNotes
+  getPinnedNotes,
+  filterNotesByCategory
 } = require("../controllers/note.controller");
 
 router.post("/", createNote);
@@ -24,6 +25,7 @@ router.get("/category/:category", getNotesByCategory);
 router.get("/status/:isPinned", getNotesByStatus);
 router.get("/filter", filterNotes);
 router.get("/filter/pinned", getPinnedNotes);
+router.get("/filter/category", filterNotesByCategory);
 router.get("/:id/summary", getNoteSummaryById);
 router.get("/:id", getNoteById);
 router.put("/:id", updateNote);
