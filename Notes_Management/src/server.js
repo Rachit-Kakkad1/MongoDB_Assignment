@@ -1,13 +1,12 @@
-const express = require("express");
+require("dotenv").config();
 
-const app = express();
+const app = require("./app");
+const connectDB = require("./config/db");
 
-app.use(express.json());
+const PORT = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
-    res.send("The Notes Management System API is running!");
-});
+connectDB()
 
-app.listen(3000, () => {
-    console.log("Server is running on port 3000");
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

@@ -41,3 +41,5 @@ const createNote = async(req,res)=>{
 
  }
 };
+
+module.exports = {createNote};
