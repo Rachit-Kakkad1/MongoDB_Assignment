@@ -158,4 +158,60 @@ const getNoteById = async (req, res) => {
   }
 };
 
-module.exports = { createNote, createBulkNotes, getAllNotes, getNoteById };
+const updateNote = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, content, category, isPinned } = req.body;
+
+    // 1. Validate the ID format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid note ID format",
+        data: null,
+      });
+    }
+
+    // 2. Validate required fields for a full update
+    if (!title || !content) {
+      return res.status(400).json({
+        success: false,
+        message: "Title and content are required for update",
+        data: null,
+      });
+    }
+
+    // 3. Update the note in the database
+    // { new: true } tells Mongoose to return the updated document, not the old one
+    // { runValidators: true } ensures the updated data still follows our schema rules
+    const updatedNote = await Note.findByIdAndUpdate(
+      id,
+      { title, content, category, isPinned },
+      { new: true, runValidators: true }
+    );
+
+    // 4. Check if the note existed before trying to update it
+    if (!updatedNote) {
+      return res.status(404).json({
+        success: false,
+        message: "Note not found",
+        data: null,
+      });
+    }
+
+    // 5. Send success response
+    res.status(200).json({
+      success: true,
+      message: "Note updated successfully",
+      data: updatedNote,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
+module.exports = { createNote, createBulkNotes, getAllNotes, getNoteById, updateNote };
