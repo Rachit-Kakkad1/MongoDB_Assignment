@@ -93,4 +93,28 @@ const createBulkNotes = async (req, res) => {
   }
 };
 
-module.exports = { createNote, createBulkNotes };
+const getAllNotes = async (req, res) => {
+  try {
+    // 1. Fetch all notes from the database
+    // We use the empty object {} inside find() to say "find everything"
+    // We also use .sort({ createdAt: -1 }) to show the newest notes first
+    const notes = await Note.find({}).sort({ createdAt: -1 });
+
+    // 2. Send a success response
+    // We use status 200 (OK) which is the standard for successful GET requests
+    res.status(200).json({
+      success: true,
+      message: "Notes retrieved successfully",
+      data: notes,
+    });
+  } catch (error) {
+    // 3. Handle any unexpected errors
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
+module.exports = { createNote, createBulkNotes, getAllNotes };
