@@ -16,7 +16,8 @@ const {
   getPinnedNotes,
   filterNotesByCategory,
   filterNotesByDateRange,
-  paginateNotes
+  paginateNotes,
+  paginateNotesByCategory
 } = require("../controllers/note.controller");
 
 router.post("/", createNote);
@@ -30,6 +31,7 @@ router.get("/filter/pinned", getPinnedNotes);
 router.get("/filter/category", filterNotesByCategory);
 router.get("/filter/date-range", filterNotesByDateRange);
 router.get("/paginate", paginateNotes);
+router.get("/paginate/category/:category", paginateNotesByCategory);
 router.get("/:id/summary", getNoteSummaryById);
 router.get("/:id", getNoteById);
 router.put("/:id", updateNote);

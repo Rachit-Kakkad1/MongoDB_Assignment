@@ -563,6 +563,53 @@ const paginateNotes = async (req, res) => {
   }
 };
 
+const paginateNotesByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const validCategories = ["work", "personal", "study"];
+    if (!validCategories.includes(category)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid category. Must be one of: work, personal, study",
+        data: null,
+      });
+    }
+
+    if (page < 1 || limit < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Page and limit must be positive integers",
+        data: null,
+      });
+    }
+
+    const skip = (page - 1) * limit;
+
+    const notes = await Note.find({ category }).skip(skip).limit(limit);
+    const totalNotes = await Note.countDocuments({ category });
+
+    res.status(200).json({
+      success: true,
+      message: `Notes in category '${category}' paginated successfully`,
+      data: {
+        notes,
+        totalNotes,
+        totalPages: Math.ceil(totalNotes / limit),
+        currentPage: page
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
 module.exports = { 
   createNote, 
   createBulkNotes, 
@@ -579,5 +626,6 @@ module.exports = {
   getPinnedNotes,
   filterNotesByCategory,
   filterNotesByDateRange,
-  paginateNotes
+  paginateNotes,
+  paginateNotesByCategory
 };
