@@ -383,6 +383,50 @@ const getNoteSummaryById = async (req, res) => {
   }
 };
 
+const filterNotes = async (req, res) => {
+  try {
+    const { category, isPinned } = req.query;
+    let query = {};
+
+    if (category) {
+      const validCategories = ["work", "personal", "study"];
+      if (!validCategories.includes(category)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid category. Must be one of: work, personal, study",
+          data: null,
+        });
+      }
+      query.category = category;
+    }
+
+    if (isPinned) {
+      if (isPinned !== "true" && isPinned !== "false") {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid status. Must be 'true' or 'false'",
+          data: null,
+        });
+      }
+      query.isPinned = isPinned === "true";
+    }
+
+    const notes = await Note.find(query);
+
+    res.status(200).json({
+      success: true,
+      message: "Notes filtered successfully",
+      data: notes,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
 module.exports = { 
   createNote, 
   createBulkNotes, 
@@ -394,5 +438,6 @@ module.exports = {
   deleteBulkNotes,
   getNotesByCategory,
   getNotesByStatus,
-  getNoteSummaryById
+  getNoteSummaryById,
+  filterNotes
 };
