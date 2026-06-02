@@ -214,4 +214,50 @@ const updateNote = async (req, res) => {
   }
 };
 
-module.exports = { createNote, createBulkNotes, getAllNotes, getNoteById, updateNote };
+const patchNote = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Validate the ID format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid note ID format",
+        data: null,
+      });
+    }
+
+    // 2. Perform a partial update
+    // PATCH requests only update the fields that the user sends.
+    // By passing req.body directly with $set, Mongoose will only overwrite those specific fields.
+    const patchedNote = await Note.findByIdAndUpdate(
+      id,
+      { $set: req.body },
+      { new: true, runValidators: true }
+    );
+
+    // 3. Check if the note existed
+    if (!patchedNote) {
+      return res.status(404).json({
+        success: false,
+        message: "Note not found",
+        data: null,
+      });
+    }
+
+    // 4. Send success response
+    res.status(200).json({
+      success: true,
+      message: "Note patched successfully",
+      data: patchedNote,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
+module.exports = { createNote, createBulkNotes, getAllNotes, getNoteById, updateNote, patchNote };
