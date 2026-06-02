@@ -301,4 +301,49 @@ const deleteNote = async (req, res) => {
   }
 };
 
-module.exports = { createNote, createBulkNotes, getAllNotes, getNoteById, updateNote, patchNote, deleteNote };
+const deleteBulkNotes = async (req, res) => {
+  try {
+    // 1. Extract the array of IDs from the request body
+    const { ids } = req.body;
+
+    // 2. Validate that 'ids' is actually an array and not empty
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide an array of note IDs to delete",
+        data: null,
+      });
+    }
+
+    // 3. Validate the format of every single ID in the array
+    for (let i = 0; i < ids.length; i++) {
+      if (!mongoose.Types.ObjectId.isValid(ids[i])) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid note ID format at index ${i}`,
+          data: null,
+        });
+      }
+    }
+
+    // 4. Delete all matching notes from the database at once
+    // We use the $in operator which tells MongoDB to match any _id that exists in our 'ids' array
+    const result = await Note.deleteMany({ _id: { $in: ids } });
+
+    // 5. Send success response
+    // deleteMany returns an object with 'deletedCount' showing how many documents were actually removed
+    res.status(200).json({
+      success: true,
+      message: `${result.deletedCount} notes deleted successfully`,
+      data: null,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
+module.exports = { createNote, createBulkNotes, getAllNotes, getNoteById, updateNote, patchNote, deleteNote, deleteBulkNotes };
