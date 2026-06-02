@@ -427,6 +427,24 @@ const filterNotes = async (req, res) => {
   }
 };
 
+const getPinnedNotes = async (req, res) => {
+  try {
+    const notes = await Note.find({ isPinned: true });
+
+    res.status(200).json({
+      success: true,
+      message: "Pinned notes retrieved successfully",
+      data: notes,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
 module.exports = { 
   createNote, 
   createBulkNotes, 
@@ -439,5 +457,6 @@ module.exports = {
   getNotesByCategory,
   getNotesByStatus,
   getNoteSummaryById,
-  filterNotes
+  filterNotes,
+  getPinnedNotes
 };
