@@ -421,6 +421,57 @@ const filterAndSortNotes = async (req, res) => {
   }
 };
 
+const filterAndPaginateNotes = async (req, res) => {
+  try {
+    const { category, isPinned, page = 1, limit = 10 } = req.query;
+
+    let query = {};
+    if (category) {
+      query.category = category;
+    }
+    if (isPinned !== undefined) {
+      query.isPinned = isPinned === "true";
+    }
+
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    if (isNaN(pageNumber) || pageNumber < 1 || isNaN(limitNumber) || limitNumber < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid pagination parameters",
+        data: null
+      });
+    }
+
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const notes = await Note.find(query).skip(skip).limit(limitNumber);
+    const totalNotes = await Note.countDocuments(query);
+    const totalPages = Math.ceil(totalNotes / limitNumber);
+
+    res.status(200).json({
+      success: true,
+      message: "Notes filtered and paginated successfully",
+      data: {
+        notes,
+        pagination: {
+          totalNotes,
+          totalPages,
+          currentPage: pageNumber,
+          limit: limitNumber
+        }
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
 module.exports = {
   createNote,
   createBulkNotes,
@@ -433,5 +484,6 @@ module.exports = {
   searchNotesByTitle,
   searchNotesByContent,
   searchAllNotes,
-  filterAndSortNotes
+  filterAndSortNotes,
+  filterAndPaginateNotes
 };
