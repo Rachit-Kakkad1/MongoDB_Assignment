@@ -252,6 +252,43 @@ const deleteNote = async (req, res) => {
   }
 };
 
+const deleteBulkNotes = async (req, res) => {
+  try {
+    const { ids } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Request body must contain a non-empty 'ids' array",
+        data: null,
+      });
+    }
+
+    const validIds = ids.every(id => mongoose.Types.ObjectId.isValid(id));
+    if (!validIds) {
+      return res.status(400).json({
+        success: false,
+        message: "One or more provided IDs are invalid",
+        data: null,
+      });
+    }
+
+    const result = await Note.deleteMany({ _id: { $in: ids } });
+
+    res.status(200).json({
+      success: true,
+      message: `${result.deletedCount} notes deleted successfully`,
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
 module.exports = {
   createNote,
   createBulkNotes,
@@ -259,5 +296,6 @@ module.exports = {
   getNoteById,
   updateNote,
   patchNote,
-  deleteNote
+  deleteNote,
+  deleteBulkNotes
 };
