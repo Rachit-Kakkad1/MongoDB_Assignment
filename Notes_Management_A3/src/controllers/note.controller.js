@@ -526,6 +526,49 @@ const sortAndPaginateNotes = async (req, res) => {
   }
 };
 
+const searchAndFilterNotes = async (req, res) => {
+  try {
+    const { query, category, isPinned } = req.query;
+
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        message: "Search query is required",
+        data: null
+      });
+    }
+
+    let filter = {
+      $or: [
+        { title: { $regex: query, $options: "i" } },
+        { content: { $regex: query, $options: "i" } }
+      ]
+    };
+
+    if (category) {
+      filter.category = category;
+    }
+    
+    if (isPinned !== undefined) {
+      filter.isPinned = isPinned === "true";
+    }
+
+    const notes = await Note.find(filter);
+
+    res.status(200).json({
+      success: true,
+      message: "Notes searched and filtered successfully",
+      data: notes,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
 module.exports = {
   createNote,
   createBulkNotes,
@@ -540,5 +583,6 @@ module.exports = {
   searchAllNotes,
   filterAndSortNotes,
   filterAndPaginateNotes,
-  sortAndPaginateNotes
+  sortAndPaginateNotes,
+  searchAndFilterNotes
 };
