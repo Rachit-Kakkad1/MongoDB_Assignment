@@ -349,6 +349,39 @@ const searchNotesByContent = async (req, res) => {
   }
 };
 
+const searchAllNotes = async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        message: "Search query is required",
+        data: null,
+      });
+    }
+
+    const notes = await Note.find({
+      $or: [
+        { title: { $regex: query, $options: "i" } },
+        { content: { $regex: query, $options: "i" } }
+      ]
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Notes searched successfully",
+      data: notes,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
 module.exports = {
   createNote,
   createBulkNotes,
@@ -359,5 +392,6 @@ module.exports = {
   deleteNote,
   deleteBulkNotes,
   searchNotesByTitle,
-  searchNotesByContent
+  searchNotesByContent,
+  searchAllNotes
 };
