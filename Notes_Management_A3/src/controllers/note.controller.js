@@ -700,6 +700,77 @@ const filterSortAndPaginateNotes = async (req, res) => {
   }
 };
 
+const masterQueryNotes = async (req, res) => {
+  try {
+    const { query, category, isPinned, sortBy = "createdAt", order = "desc", page = 1, limit = 10 } = req.query;
+
+    let filter = {};
+
+    if (query) {
+      filter.$or = [
+        { title: { $regex: query, $options: "i" } },
+        { content: { $regex: query, $options: "i" } }
+      ];
+    }
+
+    if (category) {
+      filter.category = category;
+    }
+
+    if (isPinned !== undefined) {
+      filter.isPinned = isPinned === "true";
+    }
+
+    const sortOrder = order === "asc" ? 1 : -1;
+    const allowedSortFields = ["title", "createdAt", "updatedAt", "category"];
+    
+    if (!allowedSortFields.includes(sortBy)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid sort field",
+        data: null
+      });
+    }
+
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    if (isNaN(pageNumber) || pageNumber < 1 || isNaN(limitNumber) || limitNumber < 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid pagination parameters",
+        data: null
+      });
+    }
+
+    const skip = (pageNumber - 1) * limitNumber;
+
+    const notes = await Note.find(filter).sort({ [sortBy]: sortOrder }).skip(skip).limit(limitNumber);
+    const totalNotes = await Note.countDocuments(filter);
+    const totalPages = Math.ceil(totalNotes / limitNumber);
+
+    res.status(200).json({
+      success: true,
+      message: "Master query executed successfully",
+      data: {
+        notes,
+        pagination: {
+          totalNotes,
+          totalPages,
+          currentPage: pageNumber,
+          limit: limitNumber
+        }
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      data: null,
+    });
+  }
+};
+
 module.exports = {
   createNote,
   createBulkNotes,
@@ -717,5 +788,6 @@ module.exports = {
   sortAndPaginateNotes,
   searchAndFilterNotes,
   searchSortAndPaginateNotes,
-  filterSortAndPaginateNotes
+  filterSortAndPaginateNotes,
+  masterQueryNotes
 };
