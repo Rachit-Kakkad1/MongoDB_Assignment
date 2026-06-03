@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const { createNote, createBulkNotes, getAllNotes, getNoteById, updateNote, patchNote, deleteNote, deleteBulkNotes } = require("../controllers/note.controller");
+const { createNote, createBulkNotes, getAllNotes, getNoteById, updateNote, patchNote, deleteNote, deleteBulkNotes, searchNotesByTitle } = require("../controllers/note.controller");
 
 router.post("/bulk", createBulkNotes);
 router.post("/", createNote);
+router.get("/search/title", searchNotesByTitle);
 router.get("/", getAllNotes);
 router.delete("/bulk", deleteBulkNotes);
 router.get("/:id", getNoteById);
